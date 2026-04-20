@@ -1,0 +1,104 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/ticketflow
+          jwk-set-uri: http://localhost:8180/realms/ticketflow/protocol/openid-connect/certs
+
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        # USER-SERVICE
+        - id: user-service-route
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**, /api/roles/**, /api/permissions/**
+        - id: user-service-swagger
+          uri: lb://user-service
+          predicates:
+            - Path=/user-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+
+        # TICKET-SERVICE
+        - id: ticket-service-route
+          uri: lb://ticket-service
+          predicates:
+            - Path=/api/tickets/**
+        - id: ticket-service-swagger
+          uri: lb://ticket-service
+          predicates:
+            - Path=/ticket-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+
+        # NOTIFICATION-SERVICE
+        - id: notification-service-route
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**, /api/notifications
+        - id: notification-service-swagger
+          uri: lb://notification-service
+          predicates:
+            - Path=/notification-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+
+        # DOCUMENT-SERVICE
+        - id: document-service-route
+          uri: lb://document-service
+          predicates:
+            - Path=/api/documents/**
+          filters:
+            - StripPrefix=1
+        - id: document-service-swagger
+          uri: lb://document-service
+          predicates:
+            - Path=/document-service/v3/api-docs
+          filters:
+            - StripPrefix=1
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: "1. User Service"
+        url: /user-service/v3/api-docs
+      - name: "2. Ticket Service"
+        url: /ticket-service/v3/api-docs
+      - name: "3. Notification Service"
+        url: /notification-service/v3/api-docs
+      - name: "4. Document Service"
+        url: /document-service/v3/api-docs
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    base-url: http://localhost:9411/
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, tracing
+  endpoint:
+    health:
+      show-details: always
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

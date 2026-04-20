@@ -1,0 +1,69 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ticketflow_db
+    username: postgres
+    password: jjk
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/ticketflow
+          jwk-set-uri: http://localhost:8180/realms/ticketflow/protocol/openid-connect/certs
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+keycloak:
+  auth-server-url: http://localhost:8180
+  admin:
+    username: admin
+    password: admin
+  realm: ticketflow
+  resource: ticketflow-api
+  credentials:
+    secret: jnnLZSEhx5eZ4K8uEpiJmXJ4PNmjCI1V
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    base-url: http://localhost:9411/
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, tracing
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
