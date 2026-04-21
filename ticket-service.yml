@@ -6,77 +6,32 @@ spring:
     name: ticket-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/ticketflow_db
+    url: jdbc:postgresql://postgres:5432/ticketflow_db
     username: postgres
     password: jjk
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        naming:
-          physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
 
   kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: true
-    consumer:
-      group-id: ticket-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "com.boaz.study.*"
+    bootstrap-servers: kafka:9092
 
-# Configuration de la résilience (Exigence RES-004)
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8180/realms/ticketflow
+          jwk-set-uri: http://keycloak:8180/realms/ticketflow/protocol/openid-connect/certs
+
 resilience4j:
   circuitbreaker:
     instances:
       userServiceCB:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 3
-        # validation RES-003 : reaction aux erreurs Feign (404, 500, etc.)
         recordExceptions:
           - feign.FeignException
 
-  retry:
-    instances:
-      userServiceRetry:
-        maxAttempts: 3
-        waitDuration: 2s
-
 eureka:
-  instance:
-    prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://discovery-server:8761/eureka/
 
-# Circuit Breaker RES-001 & Observabilité
 management:
-  tracing:
-    sampling:
-      probability: 1.0
   zipkin:
-    base-url: http://localhost:9411/
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus, tracing
-  endpoint:
-    health:
-      show-details: always
-    prometheus:
-      enabled: true
+    base-url: http://zipkin:9411/

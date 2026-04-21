@@ -9,8 +9,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8180/realms/ticketflow
-          jwk-set-uri: http://localhost:8180/realms/ticketflow/protocol/openid-connect/certs
+          issuer-uri: http://keycloak:8180/realms/ticketflow
+          jwk-set-uri: http://keycloak:8180/realms/ticketflow/protocol/openid-connect/certs
 
   cloud:
     gateway:
@@ -21,7 +21,6 @@ spring:
             allowedMethods: "*"
             allowedHeaders: "*"
       routes:
-        # USER-SERVICE
         - id: user-service-route
           uri: lb://user-service
           predicates:
@@ -32,8 +31,6 @@ spring:
             - Path=/user-service/v3/api-docs
           filters:
             - StripPrefix=1
-
-        # TICKET-SERVICE
         - id: ticket-service-route
           uri: lb://ticket-service
           predicates:
@@ -44,8 +41,6 @@ spring:
             - Path=/ticket-service/v3/api-docs
           filters:
             - StripPrefix=1
-
-        # NOTIFICATION-SERVICE
         - id: notification-service-route
           uri: lb://notification-service
           predicates:
@@ -56,8 +51,6 @@ spring:
             - Path=/notification-service/v3/api-docs
           filters:
             - StripPrefix=1
-
-        # DOCUMENT-SERVICE
         - id: document-service-route
           uri: lb://document-service
           predicates:
@@ -89,16 +82,13 @@ management:
     sampling:
       probability: 1.0
   zipkin:
-    base-url: http://localhost:9411/
+    base-url: http://zipkin:9411/
   endpoints:
     web:
       exposure:
         include: health, info, prometheus, tracing
-  endpoint:
-    health:
-      show-details: always
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://discovery-server:8761/eureka/

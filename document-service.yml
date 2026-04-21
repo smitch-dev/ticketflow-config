@@ -1,66 +1,30 @@
 server:
-  port: 8084
+  port: 8083
 
 spring:
   application:
-    name: document-service
+    name: notification-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/document_db
+    url: jdbc:postgresql://postgres:5432/ticketflow_db
     username: postgres
     password: jjk
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        naming:
-          physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
 
   kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    bootstrap-servers: kafka:9092
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8180/realms/ticketflow
-          jwk-set-uri: http://localhost:8180/realms/ticketflow/protocol/openid-connect/certs
-
-# Configuration MinIO
-minio:
-  endpoint: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin
-  bucket-name: ticketflow-bucket
-
-management:
-  tracing:
-    sampling:
-      probability: 1.0
-  zipkin:
-    base-url: http://localhost:9411/
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus, tracing
-  endpoint:
-    health:
-      show-details: always
-    prometheus:
-      enabled: true
+          issuer-uri: http://keycloak:8180/realms/ticketflow
+          jwk-set-uri: http://keycloak:8180/realms/ticketflow/protocol/openid-connect/certs
 
 eureka:
-  instance:
-    prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://discovery-server:8761/eureka/
+
+management:
+  zipkin:
+    base-url: http://zipkin:9411/
