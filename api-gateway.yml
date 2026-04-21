@@ -82,11 +82,17 @@ management:
     sampling:
       probability: 1.0
   zipkin:
-    base-url: http://zipkin:9411/
+    tracing:
+      endpoint: "http://zipkin:9411/api/v2/spans"
   endpoints:
     web:
       exposure:
         include: health, info, prometheus, tracing
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
 
 eureka:
   client:
