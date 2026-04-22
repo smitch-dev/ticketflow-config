@@ -1,12 +1,12 @@
 server:
-  port: 8083
+  port: 8084
 
 spring:
   application:
-    name: notification-service
+    name: document-service
 
   datasource:
-    url: jdbc:postgresql://postgres:5432/ticketflow_db
+    url: jdbc:postgresql://postgres:5432/document_db
     username: postgres
     password: jjk
 
@@ -20,24 +20,17 @@ spring:
           issuer-uri: http://keycloak:8180/realms/ticketflow
           jwk-set-uri: http://keycloak:8180/realms/ticketflow/protocol/openid-connect/certs
 
+minio:
+  endpoint: http://minio:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: ticketflow-bucket
+
 eureka:
   client:
     service-url:
       defaultZone: http://discovery-server:8761/eureka/
 
 management:
-  tracing:
-    sampling:
-      probability: 1.0
   zipkin:
-    tracing:
-      endpoint: "http://zipkin:9411/api/v2/spans"
-  endpoints:
-    web:
-      exposure:
-        include: health, info, prometheus, tracing
-  endpoint:
-    health:
-      show-details: always
-    prometheus:
-      enabled: true
+    base-url: http://zipkin:9411/
