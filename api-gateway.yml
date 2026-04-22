@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: api-gateway
+  
+  # SOLUTION AU PROBLÈME LOCALHOST : Importation explicite du serveur de config
+  config:
+    import: "optional:configserver:http://config-server:8888"
 
   security:
     oauth2:
@@ -21,6 +25,7 @@ spring:
             allowedMethods: "*"
             allowedHeaders: "*"
       routes:
+        # User Service
         - id: user-service-route
           uri: lb://user-service
           predicates:
@@ -31,6 +36,8 @@ spring:
             - Path=/user-service/v3/api-docs
           filters:
             - StripPrefix=1
+
+        # Ticket Service
         - id: ticket-service-route
           uri: lb://ticket-service
           predicates:
@@ -41,6 +48,8 @@ spring:
             - Path=/ticket-service/v3/api-docs
           filters:
             - StripPrefix=1
+
+        # Notification Service
         - id: notification-service-route
           uri: lb://notification-service
           predicates:
@@ -51,6 +60,8 @@ spring:
             - Path=/notification-service/v3/api-docs
           filters:
             - StripPrefix=1
+
+        # Document Service
         - id: document-service-route
           uri: lb://document-service
           predicates:
