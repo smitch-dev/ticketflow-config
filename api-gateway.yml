@@ -30,8 +30,6 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/users/**, /api/roles/**, /api/permissions/**
-          filters:
-            - StripPrefix=1
         - id: user-service-swagger
           uri: lb://user-service
           predicates:
