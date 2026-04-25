@@ -67,7 +67,7 @@ spring:
           predicates:
             - Path=/api/documents/**
           filters:
-            - StripPrefix=1
+            - StripPrefix=0
         - id: document-service-swagger
           uri: lb://document-service
           predicates:
