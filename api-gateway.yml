@@ -4,7 +4,6 @@ server:
 spring:
   application:
     name: api-gateway
-  
 
   config:
     import: "optional:configserver:http://config-server:8888"
@@ -13,6 +12,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
+          # URL pour valider les tokens auprès de Keycloak
           issuer-uri: http://localhost:8180/realms/ticketflow
           jwk-set-uri: http://keycloak:8180/realms/ticketflow/protocol/openid-connect/certs
 
@@ -24,12 +24,16 @@ spring:
             allowedOrigins: "http://localhost:3000"
             allowedMethods: "*"
             allowedHeaders: "*"
+      
       routes:
-        # User Service
+        # --- 1. USER SERVICE (Users, Roles, Permissions) ---
         - id: user-service-route
           uri: lb://user-service
           predicates:
             - Path=/api/users/**, /api/roles/**, /api/permissions/**
+          filters:
+            - StripPrefix=0
+
         - id: user-service-swagger
           uri: lb://user-service
           predicates:
@@ -37,11 +41,14 @@ spring:
           filters:
             - StripPrefix=1
 
-        # Ticket Service
+        # --- 2. TICKET SERVICE ---
         - id: ticket-service-route
           uri: lb://ticket-service
           predicates:
             - Path=/api/tickets/**
+          filters:
+            - StripPrefix=0
+
         - id: ticket-service-swagger
           uri: lb://ticket-service
           predicates:
@@ -49,11 +56,14 @@ spring:
           filters:
             - StripPrefix=1
 
-        # Notification Service
+        # --- 3. NOTIFICATION SERVICE ---
         - id: notification-service-route
           uri: lb://notification-service
           predicates:
-            - Path=/api/notifications/**, /api/notifications
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=0
+
         - id: notification-service-swagger
           uri: lb://notification-service
           predicates:
@@ -61,13 +71,14 @@ spring:
           filters:
             - StripPrefix=1
 
-        # Document Service
+        # --- 4. DOCUMENT SERVICE ---
         - id: document-service-route
           uri: lb://document-service
           predicates:
             - Path=/api/documents/**
           filters:
             - StripPrefix=0
+
         - id: document-service-swagger
           uri: lb://document-service
           predicates:
@@ -75,6 +86,7 @@ spring:
           filters:
             - StripPrefix=1
 
+# --- CONFIGURATION SWAGGER UI ---
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -88,6 +100,7 @@ springdoc:
       - name: "4. Document Service"
         url: /document-service/v3/api-docs
 
+# --- OBSERVABILITÉ & TRACING (Zipkin / Prometheus) ---
 management:
   tracing:
     sampling:
@@ -105,7 +118,10 @@ management:
     prometheus:
       enabled: true
 
+# --- EUREKA DISCOVERY ---
 eureka:
   client:
     service-url:
       defaultZone: http://discovery-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
