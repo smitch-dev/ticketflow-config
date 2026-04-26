@@ -18,10 +18,16 @@ spring:
     consumer:
       group-id: ${spring.application.name}-group
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      # éviter de boucler sur le même message en erreur
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
-        spring.json.trusted.packages: "com.boaz.study.*" 
+        # Configuration des délégués pour le ErrorHandlingDeserializer
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "com.boaz.study.*"
+        # je prefere ignorer les headers de type pour mapper vers tes DTOs locaux peu importe le package
+        spring.json.use.type.headers: false 
 
   security:
     oauth2:
